@@ -6,6 +6,7 @@
 - **Sponsor：** Kite AI
 - **产品形态：** 双语 Web App + Agent API
 - **核心技术：** Kite Agent Passport、Passkey spending session、USDC、x402 / MPP、可验证收据
+- **在线 Demo：** [https://ibfdbx.vnxt.cc](https://ibfdbx.vnxt.cc)
 
 ## 项目亮点
 
@@ -20,6 +21,8 @@ Agent Tender 不是一个“让 AI 帮人点支付按钮”的钱包助手，而
 ## 可运行 Demo
 
 默认 `mock` 模式不需要钱包或 API Key，一次点击即可展示完整流程：
+
+在线体验：[https://ibfdbx.vnxt.cc](https://ibfdbx.vnxt.cc)。vnext 为静态托管，在线版在 API 不可用时自动启用浏览器端 mock；真实 Kite Passport 会话与支付仍通过本地 `KITE_MODE=live` 模式运行。
 
 - 中英文一键切换，默认简体中文
 - 三家已验证供应方竞标同一份市场研究任务

@@ -20,7 +20,7 @@ Kite AI
 https://github.com/Fu99966/agent-tender
 
 **在线 Demo**  
-`<待填写部署 URL；没有部署时填写本地运行说明>`
+https://ibfdbx.vnxt.cc
 
 **产品演示视频**  
 `<待填写 2–3 分钟视频 URL>`
@@ -134,9 +134,9 @@ npm run dev
 
 ## 提交前最终检查
 
-- [ ] GitHub 仓库设为评委可访问
-- [ ] README 中替换仓库地址
-- [ ] 在线 Demo 可打开，或本地运行步骤已验证
+- [x] GitHub 仓库设为评委可访问
+- [x] README 中替换仓库地址
+- [x] 在线 Demo 可打开，或本地运行步骤已验证
 - [ ] 2–3 分钟视频已上传并允许公开访问
 - [ ] 视频未暴露验证码、JWT、Agent token 或私钥
 - [ ] live 付款证据来自真实 Passport 返回

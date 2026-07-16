@@ -27,6 +27,7 @@ import {
 } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { createTranslator } from "./i18n.js";
+import { getStaticDemoData, scoreStaticTender, settleStaticTender } from "./staticDemo.js";
 
 const phaseOrder = ["ready", "publishing", "bidding", "scoring", "awarding", "settled"];
 const phaseLabelKeys = ["phaseBrief", "phasePublished", "phaseBidsReceived", "phaseScored", "phaseAwarded", "phaseSettled"];
@@ -51,6 +52,7 @@ function App() {
   const [result, setResult] = useState(null);
   const [approval, setApproval] = useState(null);
   const [error, setError] = useState(null);
+  const [staticDemo, setStaticDemo] = useState(false);
   const [view, setView] = useState("command");
   const [weights, setWeights] = useState({ price: 40, reputation: 35, speed: 25 });
   const [logs, setLogs] = useState([
@@ -72,7 +74,10 @@ function App() {
         return response.json();
       })
       .then(setData)
-      .catch((reason) => setError({ key: reason.message }));
+      .catch(() => {
+        setStaticDemo(true);
+        setData(getStaticDemoData());
+      });
   }, []);
 
   const normalizedWeights = useMemo(() => {
@@ -114,29 +119,40 @@ function App() {
 
       setPhase("scoring");
       addLog("logScoring");
-      const scoreResponse = await fetch("/api/tenders/score", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ budget: data.procurement.budget, weights: normalizedWeights }),
-      });
-      if (!scoreResponse.ok) throw new Error("bidScoringFailed");
-      const scoreData = await scoreResponse.json();
+      let scoreData;
+      if (staticDemo) {
+        scoreData = scoreStaticTender(data.procurement.budget, normalizedWeights);
+      } else {
+        const scoreResponse = await fetch("/api/tenders/score", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ budget: data.procurement.budget, weights: normalizedWeights }),
+        });
+        if (!scoreResponse.ok) throw new Error("bidScoringFailed");
+        scoreData = await scoreResponse.json();
+      }
       setRanked(scoreData.ranked);
       await pause(900);
 
       setPhase("awarding");
       addLog("logWinnerSelected", { name: scoreData.ranked[0].name }, "success");
-      const settleResponse = await fetch("/api/tenders/settle", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ budget: data.procurement.budget, weights: normalizedWeights }),
-      });
-      let settleData = await settleResponse.json();
-      if (!settleResponse.ok && settleResponse.status !== 202) {
-        throw new Error(settleData.error || "settlementFailed");
+      let settleData;
+      let settleResponse;
+      if (staticDemo) {
+        settleData = settleStaticTender(data.procurement.budget, normalizedWeights);
+      } else {
+        settleResponse = await fetch("/api/tenders/settle", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ budget: data.procurement.budget, weights: normalizedWeights }),
+        });
+        settleData = await settleResponse.json();
+        if (!settleResponse.ok && settleResponse.status !== 202) {
+          throw new Error(settleData.error || "settlementFailed");
+        }
       }
 
-      if (settleResponse.status === 202 && settleData.status === "approval_required") {
+      if (settleResponse?.status === 202 && settleData.status === "approval_required") {
         setApproval(settleData.session);
         addLog("logSessionRequested", {}, "active");
         settleData = await waitForApproval(settleData.session.requestId, activeRunId);
